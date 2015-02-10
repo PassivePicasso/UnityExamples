@@ -10,7 +10,8 @@ using Component = UnityEngine.Component;
 
 public class Binding : MonoBehaviour
 {
-    private string BINDING_ERROR { get { return string.Format("Invalid binding on {0}: ", gameObject.name); } }
+    private string bindinerError = "Invalid binding on {0}: ";
+    private string BINDING_ERROR { get { return string.Format(bindingError, gameObject.name); } }
 
     private string NOT_ASSIGNABLE_FROMTO { get { return BINDING_ERROR + "Properties are not assignable or castable from ({2}){0} to ({3}){1}"; } }
 
