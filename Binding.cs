@@ -10,13 +10,13 @@ using Component = UnityEngine.Component;
 
 public class Binding : MonoBehaviour
 {
+    #region Error strings
     private string bindinerError = "Invalid binding on {0}: ";
-    private string BINDING_ERROR { get { return string.Format(bindingError, gameObject.name); } }
-
+    private string BINDING_ERROR { get { return string.Format(bindingError, gameObject.name); }
     private string NOT_ASSIGNABLE_FROMTO { get { return BINDING_ERROR + "Properties are not assignable or castable from ({2}){0} to ({3}){1}"; } }
-
     private string ARGUMENT_NULL { get { return BINDING_ERROR + " Argument {0} is null"; } }
-
+    #endregion
+    
     public enum BindingMode
     {
         Invalid,
@@ -26,16 +26,22 @@ public class Binding : MonoBehaviour
         OneTime
     }
 
+    #region Dinding Data
     private object lastTargetValue, lastSourceValue;
     public string SourceFieldName, TargetFieldName;
     public Component Source, Target;
     public BindingMode Mode;
+    #endregion
+    
+    #region Cached Member Accessor Actions
     private Action<object, object> SetSourceValue = null;
     private Action<object, object> SetTargetValue = null;
     private Func<object, object> GetTargetValue = null;
     private Func<object, object> GetSourceValue = null;
+    #endregion
 
-    // Use this for initialization
+    //Validate Binding data and report any errors
+    //Initialize bindings and accesors
     void Start()
     {
         if (Source == null || Target == null)
@@ -50,6 +56,8 @@ public class Binding : MonoBehaviour
         }
     }
 
+    //User reflection to identify the . delimited nested class member
+    //Drill down into the object until the last member is found
     List<MemberInfo> GetMember(object obj, string field)
     {
         var names = field.Split(new string[] { "." }, StringSplitOptions.RemoveEmptyEntries).ToList();
@@ -86,6 +94,7 @@ public class Binding : MonoBehaviour
         return currentMembers;
     }
 
+    //Reflect Setter and Getter for the specified property path on the provided object.
     void SetAccessors(object obj, string name, out Action<object, object> setter, out Func<object, object> getter)
     {
         List<Func<object, object>> setterPath = new List<Func<object, object>>();
@@ -207,6 +216,8 @@ public class Binding : MonoBehaviour
         };
     }
 
+    //Check for changes and apply the value update.
+    //Force will update the value regardless of if the value has changed.
     void UpdateTarget(bool force = false)
     {
         var sourceValue = GetSourceValue.Invoke(Source);
@@ -217,6 +228,8 @@ public class Binding : MonoBehaviour
         }
     }
 
+    //Check for changes and apply the value update.
+    //Force will update the value regardless of if the value has changed.
     void UpdateSource()
     {
         var targetValue = GetTargetValue.Invoke(Target);
@@ -225,6 +238,7 @@ public class Binding : MonoBehaviour
             SetSourceValue.Invoke(Source, targetValue);
     }
 
+    //Evaluate binding per frame
     void Update()
     {
         if (Mode == BindingMode.Invalid || SetSourceValue == null || SetTargetValue == null || GetSourceValue == null || GetTargetValue == null)
